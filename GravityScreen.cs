@@ -11,13 +11,15 @@ namespace GravityWindows
     {
         public List<GravityWindow> windows;
         public Rect rect;
-        public GravityScreen(Rect rect)
+        public bool mainScreen = false;
+        public GravityScreen(Rect rect, bool mainScreen = false)
         {
             windows = new List<GravityWindow>();
             this.rect = rect;
+            this.mainScreen = mainScreen;
         }
 
-        public GravityScreen(Rectangle bounds)
+        public GravityScreen(Rectangle bounds, bool mainScreen = false)
         {
             windows = new List<GravityWindow>();
             rect = new Rect();
@@ -25,6 +27,7 @@ namespace GravityWindows
             rect.Top = bounds.Top;
             rect.Right = bounds.Right;
             rect.Bottom = bounds.Bottom;
+            this.mainScreen = mainScreen;
         }
     }
 }

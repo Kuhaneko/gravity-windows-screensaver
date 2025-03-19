@@ -21,9 +21,12 @@ namespace GravityWindows
     {
         List<GravityScreen> drawOrder;
         bool minigame = false;
+        bool minigameUnlocked = false;
         string passphrase = "";
         HashSet<char> lettersToGuess;
-        string guessedletters = "";
+        List<char> guessedLetters;
+        TextBlock passphraseTextBlock;
+        TextBlock guessedLettersTextBlock;
 
         public App(string[] args)
         {
@@ -51,7 +54,8 @@ namespace GravityWindows
             }
             else
             {
-                Application.Current.Shutdown();
+                SettingsWindow settingsWindow = new SettingsWindow();
+                settingsWindow.Show();
             }
         }
 
@@ -165,8 +169,9 @@ namespace GravityWindows
             {
                 passphrase = winMeta.passphrase;
                 lettersToGuess = new HashSet<char>();
+                guessedLetters = new List<char>();
 
-                string removeUnguessable = Regex.Replace(winMeta.passphrase.ToLower(), @"[^a-zA-Z0-9]", "");
+                string removeUnguessable = Regex.Replace(winMeta.passphrase.ToLower(), @"[^a-zA-Z]", "");
                 foreach (char item in removeUnguessable)
                 {
                     lettersToGuess.Add(item);
@@ -175,20 +180,68 @@ namespace GravityWindows
             //Step 4 - Reconstruct the windows
             for (int i = 0; i < screens.Length; i++)
             {
-                GravityScreen gs = new GravityScreen(screens[i].Bounds);
+                GravityScreen gs = new GravityScreen(screens[i].Bounds, i == 0 ? true : false);
                 drawOrder.Add(gs);
                 Grid canvas = new Grid();
                 if (minigame)
                 {
                     if(i==0) //primary screen only
                     {
+                        BitmapSource passphraseHintImage = new BitmapImage(new Uri(path + "passphrase_hint.png"));
+                        if (passphraseHintImage.PixelWidth == screens[0].Bounds.Width && passphraseHintImage.PixelHeight == screens[0].Bounds.Height)
+                        {
+                            Image passphrase_hint = new Image
+                            {
+                                Margin = new Thickness(0, 0, 0, 0),
+                                Width = screens[i].Bounds.Width,
+                                Height = screens[i].Bounds.Height,
+                                Source = passphraseHintImage
+                            };
+                            canvas.Children.Add(passphrase_hint);
 
+                            Label passphraseLabel = new Label();
+                            string phassphraseBuilder = "";
+                            bool ignoreFirstChar = true;
+                            for (int charIndex = 0; charIndex < passphrase.Length; charIndex++)
+                            {
+                                if (!ignoreFirstChar) phassphraseBuilder += " ";
+                                else ignoreFirstChar = false;
+                                if (char.IsLetter(passphrase[charIndex])) phassphraseBuilder += "_";
+                                else phassphraseBuilder += passphrase[charIndex];
+                            }
+
+                            passphraseTextBlock = new TextBlock { Text = phassphraseBuilder, TextAlignment = TextAlignment.Center };
+                            passphraseLabel.Content = passphraseTextBlock;
+                            passphraseLabel.Margin = new Thickness(screens[i].Bounds.Width * 0.2, screens[i].Bounds.Height * 0.75, screens[i].Bounds.Width * 0.2, screens[i].Bounds.Height * 0.15);
+                            passphraseLabel.Foreground = System.Windows.Media.Brushes.White;
+                            passphraseLabel.FontSize = (int)(screens[i].Bounds.Height / 24);
+                            passphraseLabel.HorizontalContentAlignment = HorizontalAlignment.Center;
+                            passphraseLabel.VerticalContentAlignment = VerticalAlignment.Center;
+                            canvas.Children.Add(passphraseLabel);
+
+
+                            Label guessedLettersLabel = new Label();
+                            guessedLettersTextBlock = new TextBlock { Text = "Guessed characters:\n\n", TextAlignment = TextAlignment.Center };
+                            guessedLettersLabel.Content = guessedLettersTextBlock;
+                            guessedLettersLabel.Margin = new Thickness(screens[i].Bounds.Width * 0.75, screens[i].Bounds.Height * 0.2, screens[i].Bounds.Width * 0.05, screens[i].Bounds.Height * 0.2);
+                            guessedLettersLabel.Foreground = System.Windows.Media.Brushes.White;
+                            guessedLettersLabel.FontSize = (int)(screens[i].Bounds.Height / 32);
+                            guessedLettersLabel.HorizontalContentAlignment = HorizontalAlignment.Center;
+                            guessedLettersLabel.VerticalContentAlignment = VerticalAlignment.Top;
+                            canvas.Children.Add(guessedLettersLabel);
+
+                        }
+                        else
+                        {
+                            //failover
+                            minigame = false;
+                        }
                     }
                 }
                 
                 //while this is less efficient if minigame ever fails it will cancel out of anything it did and fall back to this...
                 //probably safer to do it this way anyway...
-                if(!minigame)
+                if(!minigame || i != 0)
                 {
                     //Step 4.1 - Black background
                     System.Drawing.Bitmap bmap = new System.Drawing.Bitmap(screens[i].Bounds.Width, screens[i].Bounds.Height);
@@ -213,16 +266,18 @@ namespace GravityWindows
                         Source = blackBitmap,
                     };
                     canvas.Children.Add(blackBackground);
-
-                    //Step 4.2 - Minigame / Regular background
-                    Label label = new Label();
-                    label.Content = new TextBlock { Text = "Press ESC to exit", TextAlignment = TextAlignment.Center };
-                    label.Margin = new Thickness(screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4, screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4);
-                    label.Foreground = System.Windows.Media.Brushes.White;
-                    label.FontSize = (int)(screens[i].Bounds.Height / 24);
-                    label.HorizontalContentAlignment = HorizontalAlignment.Center;
-                    label.VerticalContentAlignment = VerticalAlignment.Center;
-                    canvas.Children.Add(label);
+                    if (!minigame)
+                    {
+                        //Step 4.2 - Minigame / Regular background
+                        Label label = new Label();
+                        label.Content = new TextBlock { Text = "Press ESC to exit", TextAlignment = TextAlignment.Center };
+                        label.Margin = new Thickness(screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4, screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4);
+                        label.Foreground = System.Windows.Media.Brushes.White;
+                        label.FontSize = (int)(screens[i].Bounds.Height / 24);
+                        label.HorizontalContentAlignment = HorizontalAlignment.Center;
+                        label.VerticalContentAlignment = VerticalAlignment.Center;
+                        canvas.Children.Add(label);
+                    }
                 }
 
                 //Step 4.3 - Image loading! Desktop comes first
@@ -234,7 +289,7 @@ namespace GravityWindows
                     Source = (ImageSource)new ImageSourceConverter().ConvertFromString(path + $"screen{i}\\desktop.png")
                 };
                 canvas.Children.Add(desktop);
-                gs.windows.Add(new GravityWindow(desktop, i));
+                gs.windows.Add(new GravityWindow(desktop, i, true));
                 //Step 4.2 - Reconstruct all windows based on ID
                 foreach (AppWindowMeta appWindow in winMeta.appScreens[i].AppWindows)
                 {
@@ -358,6 +413,50 @@ namespace GravityWindows
                 WakeUp();
             }
 
+            if(minigameUnlocked)
+            {
+                if (e.Key >= Key.A && e.Key <= Key.Z)
+                {
+                    char keyChar = (char)('A' + (e.Key - Key.A));
+                    keyChar = char.ToLower(keyChar);
+                    if (lettersToGuess.Contains(keyChar))
+                    {
+                        lettersToGuess.Remove(keyChar);
+                        string phassphraseBuilder = "";
+                        bool ignoreFirstChar = true;
+                        for (int charIndex = 0; charIndex < passphrase.Length; charIndex++)
+                        {
+                            if (!ignoreFirstChar) phassphraseBuilder += " ";
+                            else ignoreFirstChar = false;
+                            if (char.IsLetter(passphrase[charIndex]))
+                            {
+                                if (!lettersToGuess.Contains(char.ToLower(passphrase[charIndex]))) phassphraseBuilder += passphrase[charIndex];
+                                else phassphraseBuilder += "_";
+                            }
+                            else phassphraseBuilder += passphrase[charIndex];
+                        }
+                        passphraseTextBlock.Text = phassphraseBuilder;
+                        if(lettersToGuess.Count == 0) Application.Current.Shutdown();
+                    }
+                    if (!guessedLetters.Contains(keyChar))
+                    {
+                        guessedLetters.Add(keyChar);
+                        string charsToAddToLabel = "";
+                        bool firstIgnore = true;
+                        for (int consecLetter = 0; consecLetter < guessedLetters.Count; consecLetter++)
+                        {
+                            char c = guessedLetters[consecLetter];
+                            if (!firstIgnore) charsToAddToLabel += ", ";
+                            else firstIgnore = false;
+                            //enter break after 7th character
+                            if (consecLetter % 8 == 7) charsToAddToLabel += "\n";
+                            charsToAddToLabel+=char.ToLower(c);
+                        }
+                        guessedLettersTextBlock.Text = "Guessed characters:\n\n"+charsToAddToLabel;
+                    }
+                }
+            }
+
             //WakeUp();
             //Console.WriteLine("KeyPressed");
         }
@@ -376,6 +475,7 @@ namespace GravityWindows
                     if (gravityWindows.IndexOf(windowClicked) <= 0)
                     {
                         gravityWindows.Add(windowClicked);
+                        if (clickedOnScreen.mainScreen && windowClicked.desktop) minigameUnlocked = true; 
                     }
                 }
             }
