@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GravityWindows", "GravityWindows.csproj", "{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		SlashC|Any CPU = SlashC|Any CPU
+		SlashS|Any CPU = SlashS|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.SlashC|Any CPU.ActiveCfg = SlashC|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.SlashC|Any CPU.Build.0 = SlashC|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.SlashS|Any CPU.ActiveCfg = SlashS|Any CPU
+		{8ECB379E-72A3-4055-9F5C-7EFD32B6AE06}.SlashS|Any CPU.Build.0 = SlashS|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
