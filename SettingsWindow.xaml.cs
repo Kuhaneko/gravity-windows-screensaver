@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -9,6 +11,7 @@ using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Shell32;
 
 namespace GravityWindows
@@ -242,15 +245,15 @@ namespace GravityWindows
             var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "PNG Files (*.png)|*.png" };
             var result = ofd.ShowDialog();
             if (result == false) return;
-            ImageSource loadedImage = (ImageSource)new ImageSourceConverter().ConvertFromString(ofd.FileName);
+            BitmapSource loadedImage = new BitmapImage(new Uri(ofd.FileName));
             Rectangle mainScreenBounds = Screen.AllScreens[0].Bounds;
-            int imageCompareWidth = (int)(loadedImage.Width - (mainScreenBounds.Right - mainScreenBounds.Left));
-            int imageCompareHeight = (int)(loadedImage.Height - (mainScreenBounds.Bottom - mainScreenBounds.Top));
-            imageCompareWidth = imageCompareWidth < 0 ? imageCompareWidth * -1 : imageCompareWidth;
-            imageCompareHeight = imageCompareHeight < 0 ? imageCompareHeight * -1 : imageCompareHeight;
+            int imageCompareWidth = (loadedImage.PixelWidth - (mainScreenBounds.Right - mainScreenBounds.Left));
+            int imageCompareHeight = (loadedImage.PixelHeight - (mainScreenBounds.Bottom - mainScreenBounds.Top));
+            //imageCompareWidth = imageCompareWidth < 0 ? imageCompareWidth * -1 : imageCompareWidth;
+            //imageCompareHeight = imageCompareHeight < 0 ? imageCompareHeight * -1 : imageCompareHeight;
 
 
-            if (imageCompareWidth >= 0 && imageCompareWidth < 5 && imageCompareHeight >= 0 && imageCompareHeight < 5 )
+            if (imageCompareWidth == 0 && imageCompareHeight == 0)
             {
                 loadedImagePath = ofd.FileName;
                 passphrase_hintImage.Source = loadedImage;
@@ -270,6 +273,20 @@ namespace GravityWindows
             passphrase_hintImage.Visibility = hintEnabled ? Visibility.Visible : Visibility.Hidden;
             passphrase_resWarning.Visibility = hintEnabled ? Visibility.Visible : Visibility.Hidden;
             passphrase_prompt.Visibility = hintEnabled ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        private void OpenCaptures(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                path = path + "\\GravityWindows\\";
+                using (Process.Start(path)) { }
+            }
+            catch (Win32Exception error)
+            {
+                Console.WriteLine(error);
+            }
         }
     }
 }

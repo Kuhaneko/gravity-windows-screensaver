@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +20,10 @@ namespace GravityWindows
     public partial class App : Application
     {
         List<GravityScreen> drawOrder;
-
+        bool minigame = false;
+        string passphrase = "";
+        HashSet<char> lettersToGuess;
+        string guessedletters = "";
 
         public App(string[] args)
         {
@@ -156,49 +160,70 @@ namespace GravityWindows
 
 
             //Step 3 - Prep passphrase minigame
-            
+            minigame = winMeta.passwordEnabled;
+            if (minigame)
+            {
+                passphrase = winMeta.passphrase;
+                lettersToGuess = new HashSet<char>();
 
+                string removeUnguessable = Regex.Replace(winMeta.passphrase.ToLower(), @"[^a-zA-Z0-9]", "");
+                foreach (char item in removeUnguessable)
+                {
+                    lettersToGuess.Add(item);
+                }
+            }
             //Step 4 - Reconstruct the windows
             for (int i = 0; i < screens.Length; i++)
             {
                 GravityScreen gs = new GravityScreen(screens[i].Bounds);
                 drawOrder.Add(gs);
                 Grid canvas = new Grid();
-
-                //Step 4.1 - Black background
-                System.Drawing.Bitmap bmap = new System.Drawing.Bitmap(screens[i].Bounds.Width, screens[i].Bounds.Height);
-                System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmap);
-                g.FillRegion(System.Drawing.Brushes.Black, new System.Drawing.Region(screens[i].Bounds));
-
-                MemoryStream memory = new MemoryStream();
-                bmap.Save(memory, ImageFormat.Bmp);
-                memory.Position = 0;
-
-                BitmapImage blackBitmap = new BitmapImage();
-                blackBitmap.BeginInit();
-                blackBitmap.StreamSource = memory;
-                blackBitmap.CacheOption = BitmapCacheOption.OnLoad;
-                blackBitmap.EndInit();
-
-                Image blackBackground = new Image
+                if (minigame)
                 {
-                    Margin = new Thickness(0, 0, 0, 0),
-                    Width = screens[i].Bounds.Width,
-                    Height = screens[i].Bounds.Height,
-                    Source = blackBitmap,
-                };
-                canvas.Children.Add(blackBackground);
+                    if(i==0) //primary screen only
+                    {
 
-                //Step 4.2 - Minigame / Regular background
-                Label label = new Label();
-                label.Content = new TextBlock { Text = "Press ESC to exit", TextAlignment = TextAlignment.Center };
-                label.Margin = new Thickness(screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4, screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4);
-                label.Foreground = System.Windows.Media.Brushes.White;
-                label.FontSize = (int)(screens[i].Bounds.Height / 24);
-                label.HorizontalContentAlignment = HorizontalAlignment.Center;
-                label.VerticalContentAlignment = VerticalAlignment.Center;
-                canvas.Children.Add(label);
+                    }
+                }
+                
+                //while this is less efficient if minigame ever fails it will cancel out of anything it did and fall back to this...
+                //probably safer to do it this way anyway...
+                if(!minigame)
+                {
+                    //Step 4.1 - Black background
+                    System.Drawing.Bitmap bmap = new System.Drawing.Bitmap(screens[i].Bounds.Width, screens[i].Bounds.Height);
+                    System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmap);
+                    g.FillRegion(System.Drawing.Brushes.Black, new System.Drawing.Region(screens[i].Bounds));
 
+                    MemoryStream memory = new MemoryStream();
+                    bmap.Save(memory, ImageFormat.Bmp);
+                    memory.Position = 0;
+
+                    BitmapImage blackBitmap = new BitmapImage();
+                    blackBitmap.BeginInit();
+                    blackBitmap.StreamSource = memory;
+                    blackBitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    blackBitmap.EndInit();
+
+                    Image blackBackground = new Image
+                    {
+                        Margin = new Thickness(0, 0, 0, 0),
+                        Width = screens[i].Bounds.Width,
+                        Height = screens[i].Bounds.Height,
+                        Source = blackBitmap,
+                    };
+                    canvas.Children.Add(blackBackground);
+
+                    //Step 4.2 - Minigame / Regular background
+                    Label label = new Label();
+                    label.Content = new TextBlock { Text = "Press ESC to exit", TextAlignment = TextAlignment.Center };
+                    label.Margin = new Thickness(screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4, screens[i].Bounds.Width * 0.3, screens[i].Bounds.Height * 0.4);
+                    label.Foreground = System.Windows.Media.Brushes.White;
+                    label.FontSize = (int)(screens[i].Bounds.Height / 24);
+                    label.HorizontalContentAlignment = HorizontalAlignment.Center;
+                    label.VerticalContentAlignment = VerticalAlignment.Center;
+                    canvas.Children.Add(label);
+                }
 
                 //Step 4.3 - Image loading! Desktop comes first
                 Image desktop = new Image

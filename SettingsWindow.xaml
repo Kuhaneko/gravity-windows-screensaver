@@ -21,6 +21,7 @@
         <Label x:Name="passphrase_resWarning" Content="Required: Hint image must be the same as resolution as monitor!" HorizontalAlignment="Center" Margin="0,275,0,0" VerticalAlignment="Top" Grid.Column="1" Height="26" Width="354"/>
         <Label x:Name="passphrase_prompt" Content="Passphrase:" HorizontalAlignment="Center" Margin="0,74,0,0" VerticalAlignment="Top" Grid.Column="1" Width="200" Height="26"/>
         <Label x:Name="loading_text" Content="Loading..." Margin="0,390,0,0" VerticalAlignment="Top" FontWeight="Bold" FontSize="18" Grid.Column="1" Background="White" RenderTransformOrigin="-0.42,1.32" Height="34" HorizontalAlignment="Center"/>
+        <Button Content="Open&#x0d;&#x0a;Captures" Margin="0,333,0,0" HorizontalContentAlignment="Center" Click="OpenCaptures" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Width="76" Height="45" VerticalAlignment="Top" />
 
     </Grid>
 </Window>
