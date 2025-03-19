@@ -305,7 +305,7 @@ namespace GravityWindows
                 gravityWindow.image.Margin = new Thickness(gravityWindow.image.Margin.Left, gravityWindow.image.Margin.Top + gravityWindow.velocity, 0, 0);
 
 
-                if (gravityWindow.image.Margin.Top > drawOrder[gravityWindow.belongsToScreen].rect.Bottom + 50)
+                if (gravityWindow.image.Margin.Top > (drawOrder[gravityWindow.belongsToScreen].rect.Bottom - drawOrder[gravityWindow.belongsToScreen].rect.Top) + 50)
                 {
                     gravityWindows.Remove(gravityWindow);
                 }
