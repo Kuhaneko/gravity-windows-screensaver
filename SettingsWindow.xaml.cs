@@ -60,6 +60,9 @@ namespace GravityWindows
         public static extern bool SetForegroundWindow(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool ShowWindow(IntPtr hWnd, int flags);
 
 
         private enum GWL
@@ -188,13 +191,14 @@ namespace GravityWindows
                 shellObject.ToggleDesktop();
                 Thread.Sleep(500);
                 CaptureRect(screen.screenRect).Save(path + $"screen{screenCount}\\desktop.png", ImageFormat.Png);
-                shellObject.ToggleDesktop();
-                Thread.Sleep(500);
+                //shellObject.ToggleDesktop();
+                //Thread.Sleep(500);
 
                 //Step 4. Since sorted and we're in the loop it's screenshot time
                 foreach (AppWindowMeta app in screen.AppWindows)
                 {
                     //Step 4.1 - Bring app in front of everybody else
+                    ShowWindow(app.GetHandle(), app.maximized ? 3 : 9); //9 is RESTORE
                     SetForegroundWindow(app.GetHandle());
                     SetWindowPos(MainAppWindow, 0, screen.screenRect.Right+50, screen.screenRect.Bottom + 50, MainAppWindowOriginalRect.Right-MainAppWindowOriginalRect.Left, MainAppWindowOriginalRect.Bottom - MainAppWindowOriginalRect.Top, SWP_NOZORDER | SWP_SHOWWINDOW);
                     SetForegroundWindow(MainAppWindow);

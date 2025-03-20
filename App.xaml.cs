@@ -290,8 +290,11 @@ namespace GravityWindows
                 };
                 canvas.Children.Add(desktop);
                 gs.windows.Add(new GravityWindow(desktop, i, true));
+
+                List<AppWindowMeta> windowList = winMeta.appScreens[i].AppWindows;
+                windowList.Sort((x, y) => x.zOrder.CompareTo(y.zOrder));
                 //Step 4.2 - Reconstruct all windows based on ID
-                foreach (AppWindowMeta appWindow in winMeta.appScreens[i].AppWindows)
+                foreach (AppWindowMeta appWindow in windowList)
                 {
                     //4.3 - Verify if image exists
                     if (!File.Exists(path + $"screen{i}\\window{appWindow.ID}.png")) continue;
